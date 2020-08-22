@@ -1,22 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <androidx.viewpager.widget.ViewPager
+
+
+
+    <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/viewPager"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
-
-
+        android:layout_height="match_parent"
+        android:scrollbarStyle="insideOverlay"
+        android:scrollbars="vertical"
+        android:scrollbarThumbVertical="@color/colorAccent"
+        android:scrollbarSize="@dimen/_25sdp"
+        />
     <LinearLayout
+        android:id="@+id/rootView_buttons"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:orientation="horizontal"
         android:weightSum="2">
+
 
         <Button
 
@@ -36,13 +45,64 @@
             android:layout_weight="1"
             android:text="Next" />
     </LinearLayout>
-
     <ProgressBar
         android:id="@+id/loadingBar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
         />
+    <TextView
+        android:id="@+id/pdfView_ac_pageCount_Tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerInParent="true"
+        android:layout_margin="@dimen/_10sdp"
+        android:padding="@dimen/_5sdp"
+        android:textColor="@android:color/white"
+        android:background="@android:color/black"
+        />
+    <androidx.cardview.widget.CardView
+        android:layout_width="@dimen/_50sdp"
+        android:layout_height="@dimen/_50sdp"
+        android:layout_alignParentRight="true"
+        android:layout_above="@+id/rootView_buttons"
+        android:layout_margin="@dimen/_30sdp"
+        app:cardCornerRadius="@dimen/_25sdp"
+        app:cardBackgroundColor="@color/colorAccent"
+        >
+        <ImageButton
+            android:id="@+id/btn_findPage"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:src="@drawable/ic_find_page"
+            android:background="@android:color/transparent"
+            />
+    </androidx.cardview.widget.CardView>
+
+    <com.lukelorusso.verticalseekbar.VerticalSeekBar
+        android:id="@+id/pdfView_ac_seekbarVertical"
+        android:layout_width="@dimen/_20sdp"
+        android:layout_height="match_parent"
+        android:layout_alignParentRight="true"
+        app:vsb_click_to_set_progress="false"
+        app:vsb_bar_corner_radius="15dp"
+        app:vsb_bar_width="60dp"
+        app:vsb_bar_background="#eeeeee"
+        app:vsb_bar_progress_gradient_end="@android:color/transparent"
+        app:vsb_bar_progress_gradient_start="@android:color/transparent"
+        app:vsb_max_placeholder_position="inside"
+        app:vsb_max_placeholder_src="@android:color/transparent"
+        app:vsb_min_placeholder_position="inside"
+        app:vsb_min_placeholder_src="@android:color/transparent"
+        app:vsb_progress="50"
+        app:vsb_show_thumb="true"
+        app:vsb_thumb_container_corner_radius="5dp"
+        app:vsb_thumb_container_tint="@color/colorAccent"
+        app:vsb_use_thumb_to_set_progress="true"
+        android:layout_above="@+id/rootView_buttons"
+        />
+
 </RelativeLayout>
 
 

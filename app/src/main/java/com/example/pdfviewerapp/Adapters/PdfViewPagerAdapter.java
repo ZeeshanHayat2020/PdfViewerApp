@@ -12,12 +12,12 @@ import androidx.viewpager.widget.PagerAdapter;
 
 import java.util.ArrayList;
 
-public class MyViewPagerAdapter extends PagerAdapter {
+public class PdfViewPagerAdapter extends PagerAdapter {
     private Context mContext;
     private ArrayList<Bitmap> bitmapsList;
     private OnImageClickLitener mListener;
 
-    public MyViewPagerAdapter(Context context, ArrayList<Bitmap> bitmapsList) {
+    public PdfViewPagerAdapter(Context context, ArrayList<Bitmap> bitmapsList) {
         mContext = context;
         this.bitmapsList = bitmapsList;
 
@@ -47,14 +47,14 @@ public class MyViewPagerAdapter extends PagerAdapter {
 
         ImageView imageView = new ImageView(mContext);
         imageView.setImageBitmap(bitmapsList.get(position));
-        imageView.setOnClickListener(new View.OnClickListener() {
+        /*imageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (mListener != null) {
                     mListener.onClick();
                 }
             }
-        });
+        });*/
         container.addView(imageView, 0);
         return imageView;
     }
