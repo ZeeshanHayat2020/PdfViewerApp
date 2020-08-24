@@ -66,7 +66,6 @@ public class PdfViewActivity extends AppCompatActivity implements NumberPicker.O
     private boolean isSwipe;
     private SharedPreferences sharedPreferences;
     private SharedPreferences.Editor editor;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -139,24 +138,27 @@ public class PdfViewActivity extends AppCompatActivity implements NumberPicker.O
         viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-                currentPageIndex = position;
 
-                prevBtn.setEnabled(currentPageIndex > 0);
-                nextBtn.setEnabled(currentPageIndex + 1 < totalPages);
-
-                updateScrollerValue(currentPageIndex);
-                super.onPageScrolled(position, positionOffset, positionOffsetPixels);
+                Log.d(TAG, "Page ChangeListener  Called: with Page No" + currentPageIndex);
             }
 
             @Override
             public void onPageSelected(int position) {
+                Log.d(TAG, "Page SelectedListener  Called:");
                 super.onPageSelected(position);
             }
 
+
             @Override
             public void onPageScrollStateChanged(int state) {
-                updatePageCountTV(currentPageIndex);
+                currentPageIndex = viewPager.getCurrentItem();
+                prevBtn.setEnabled(currentPageIndex > 0);
+                nextBtn.setEnabled(currentPageIndex + 1 < totalPages);
+                updateScrollerValue(currentPageIndex);
+//                updatePageCountTV(currentPageIndex);
+                Log.d(TAG, "Page ScrolledState Changed  Called: with state:" + viewPager.getCurrentItem());
                 isSwipe = true;
+
                 super.onPageScrollStateChanged(state);
             }
         });
@@ -186,6 +188,7 @@ public class PdfViewActivity extends AppCompatActivity implements NumberPicker.O
                     public Unit invoke(Integer progressValue) {
                         updateViewPager(progressValue);
                         isSwipe = false;
+                        Log.d(TAG, "seekbar Pressed Called:");
                         return null;
                     }
                 }
@@ -196,6 +199,7 @@ public class PdfViewActivity extends AppCompatActivity implements NumberPicker.O
                     public Unit invoke(Integer progressValue) {
                         if (isSwipe == false) {
                             updateViewPager(progressValue);
+                            Log.d(TAG, "seekbar Value Change Called:");
                         }
                         isSwipe = false;
                         return null;
@@ -207,6 +211,7 @@ public class PdfViewActivity extends AppCompatActivity implements NumberPicker.O
                     @Override
                     public Unit invoke(Integer progressValue) {
                         updateViewPager(progressValue);
+                        Log.d(TAG, "seekbar Release  Called:");
                         return null;
                     }
                 }
@@ -228,7 +233,8 @@ public class PdfViewActivity extends AppCompatActivity implements NumberPicker.O
         editor.commit();
         editor.apply();
     }
-    private void setThemeMode(boolean isNightMode){
+
+    private void setThemeMode(boolean isNightMode) {
         if (isNightMode) {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
 
@@ -300,6 +306,7 @@ public class PdfViewActivity extends AppCompatActivity implements NumberPicker.O
     }
 
     private void setViewPagerOrientation(int orientation) {
+
         viewPager.setOrientation(orientation);
     }
 
@@ -309,7 +316,6 @@ public class PdfViewActivity extends AppCompatActivity implements NumberPicker.O
         nextBtn.setEnabled(currentPageIndex + 1 < totalPages);
         updatePageCountTV(currentPageIndex);
     }
-
     private void updatePageCountTV(int currentPageIndex) {
         tv_pageCount.setText(currentPageIndex + "/" + totalPages);
     }
@@ -321,7 +327,7 @@ public class PdfViewActivity extends AppCompatActivity implements NumberPicker.O
     }
 
     public void showNumberPicker() {
-        NumberPickerDialog newFragment = new NumberPickerDialog(0, renderer.getPageCount());
+        NumberPickerDialog newFragment = new NumberPickerDialog(0, renderer.getPageCount()-1);
         newFragment.setValueChangeListener(this);
         newFragment.show(getSupportFragmentManager(), "time picker");
     }
@@ -351,8 +357,12 @@ public class PdfViewActivity extends AppCompatActivity implements NumberPicker.O
 
     @Override
     public void onValueChange(NumberPicker numberPicker, int i, int i1) {
-        updateViewPager(numberPicker.getValue());
+
+        updateViewPager(i);
+
+        Log.d(TAG, "onValueChange: Number PickerValue:" + numberPicker.getValue() + "i:" + i + "i1:" + i);
     }
+
 
     public class LoadFiles extends AsyncTask<Void, Void, Void> {
 
