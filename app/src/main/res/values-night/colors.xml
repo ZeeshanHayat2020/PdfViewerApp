@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#202020</color>
+    <color name="colorPrimaryDark">#202020</color>
+    <color name="colorAccent">#FFFFFF</color>
+
+
+
+    <color name="color_enable">#3C3C3C</color>
+    <color name="color_disable">#6E6E6E</color>
+    <color name="colorControlNormal">#DFDFDF</color>
+
+    <color name="colorBackground">#000000</color>
+    <color name="color_Text">#FFFFFF</color>
+    <color name="color_Buttons">#FFFFFF</color>
+</resources>

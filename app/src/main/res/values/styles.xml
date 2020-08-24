@@ -1,10 +1,19 @@
 <resources>
-    <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
-        <!-- Customize your theme here. -->
+    <style name="AppTheme" parent="Theme.MaterialComponents.DayNight">
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
+        <item name="toolbarStyle">@style/CustomToolBarStyle</item>
+        <item name="colorControlNormal">@color/colorControlNormal</item>
     </style>
+
+    <style name="Theme.Buttons" parent="Widget.MaterialComponents.Button.UnelevatedButton">
+        <item name="background">@color/bg_buttons</item>
+        <item name="android:backgroundTint">@color/bg_buttons</item>
+    </style>
+    <style name="CustomToolBarStyle" parent="@style/Widget.AppCompat.Toolbar">
+        <item name="titleTextColor">@color/color_Text</item>
+    </style>
+
 
 </resources>

@@ -3,11 +3,12 @@ package com.example.pdfviewerapp.Activities;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.viewpager.widget.ViewPager;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.viewpager2.widget.ViewPager2;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.pdf.PdfRenderer;
@@ -15,6 +16,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.ParcelFileDescriptor;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -22,15 +24,15 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.NumberPicker;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.example.pdfviewerapp.Adapters.PdfViewPager2Adapter;
-import com.example.pdfviewerapp.Adapters.PdfViewPagerAdapter;
 import com.example.pdfviewerapp.R;
+import com.example.pdfviewerapp.constants.Constant;
 import com.example.pdfviewerapp.dialogboxes.NumberPickerDialog;
-import com.example.pdfviewerapp.views.MyCustomViewPager;
 import com.lukelorusso.verticalseekbar.VerticalSeekBar;
 
 import java.io.File;
@@ -48,6 +50,7 @@ public class PdfViewActivity extends AppCompatActivity implements NumberPicker.O
     String TAG = "ActivityPdfRenderView";
     private PdfRenderer renderer;
     private PdfRenderer.Page currentPage;
+    private LinearLayout rootViewChangeButton;
     private ProgressBar loadingBar;
     private Button prevBtn;
     private Button nextBtn;
@@ -60,14 +63,24 @@ public class PdfViewActivity extends AppCompatActivity implements NumberPicker.O
     private int currentPageIndex;
     private int totalPages;
     private VerticalSeekBar verticalSeekBar;
+    private boolean isSwipe;
+    private SharedPreferences sharedPreferences;
+    private SharedPreferences.Editor editor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        initSharedPrefs();
+        if (getThemeNightMode()) {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+
+        } else {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+        }
         setContentView(R.layout.activity_pdf_view);
         Intent intent = getIntent();
-
         loadingBar = (ProgressBar) findViewById(R.id.loadingBar);
+        rootViewChangeButton = (LinearLayout) findViewById(R.id.pdfView_ac_rootView_buttons);
         tv_pageCount = (TextView) findViewById(R.id.pdfView_ac_pageCount_Tv);
         verticalSeekBar = findViewById(R.id.pdfView_ac_seekbarVertical);
         prevBtn = (Button) findViewById(R.id.btnPrev);
@@ -77,75 +90,7 @@ public class PdfViewActivity extends AppCompatActivity implements NumberPicker.O
         nextBtn.setOnClickListener(onClickListener);
         prevBtn.setOnClickListener(onClickListener);
 
-
-    }
-
-    private void setUpVerticalSeekBar(int maxValue) {
-        verticalSeekBar.setMaxValue(maxValue);
-        verticalSeekBar.setOnProgressChangeListener(
-                new Function1<Integer, Unit>() {
-                    @Override
-                    public Unit invoke(Integer progressValue) {
-                        Log.d("VerticalSeekBar", "PROGRESS CHANGED at value: " + progressValue);
-                        updateViewPager(progressValue);
-                        return null;
-                    }
-                }
-        );
-        verticalSeekBar.setOnPressListener(
-                new Function1<Integer, Unit>() {
-                    @Override
-                    public Unit invoke(Integer progressValue) {
-                        Log.d("VerticalSeekBar", "PRESSED at value: " + progressValue);
-                        int prog=-progressValue;
-                        updateViewPager(prog);
-                        return null;
-                    }
-                }
-        );
-        verticalSeekBar.setOnReleaseListener(
-                new Function1<Integer, Unit>() {
-                    @Override
-                    public Unit invoke(Integer progressValue) {
-                        Log.d("VerticalSeekBar", "RELEASED at value: " + progressValue);
-                        updateViewPager(progressValue);
-                        return null;
-                    }
-                }
-        );
-
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
         new LoadFiles().execute();
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.menu_activity_pdfview, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch (item.getItemId()) {
-
-            case R.id.menu_pdfView_item_Vertical: {
-                setViewPagerOrientation(ViewPager2.ORIENTATION_VERTICAL);
-            }
-            break;
-            case R.id.menu_pdfView_item_Horizontal: {
-                setViewPagerOrientation(ViewPager2.ORIENTATION_HORIZONTAL);
-            }
-            break;
-            default: {
-                super.onOptionsItemSelected(item);
-            }
-        }
-        return true;
     }
 
     private void initRenderer() {
@@ -195,9 +140,11 @@ public class PdfViewActivity extends AppCompatActivity implements NumberPicker.O
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
                 currentPageIndex = position;
+
                 prevBtn.setEnabled(currentPageIndex > 0);
                 nextBtn.setEnabled(currentPageIndex + 1 < totalPages);
-                updatePageCountTV(currentPageIndex);
+
+                updateScrollerValue(currentPageIndex);
                 super.onPageScrolled(position, positionOffset, positionOffsetPixels);
             }
 
@@ -208,14 +155,12 @@ public class PdfViewActivity extends AppCompatActivity implements NumberPicker.O
 
             @Override
             public void onPageScrollStateChanged(int state) {
+                updatePageCountTV(currentPageIndex);
+                isSwipe = true;
                 super.onPageScrollStateChanged(state);
             }
         });
 
-    }
-
-    private void setViewPagerOrientation(int orientation) {
-        viewPager.setOrientation(orientation);
     }
 
     private void getBitmapsFromRenderer() {
@@ -232,16 +177,147 @@ public class PdfViewActivity extends AppCompatActivity implements NumberPicker.O
         }
     }
 
+    private void setUpVerticalSeekBar(int maxValue) {
+        verticalSeekBar.setMaxValue(maxValue);
+        verticalSeekBar.setProgress(0);
+        verticalSeekBar.setOnProgressChangeListener(
+                new Function1<Integer, Unit>() {
+                    @Override
+                    public Unit invoke(Integer progressValue) {
+                        updateViewPager(progressValue);
+                        isSwipe = false;
+                        return null;
+                    }
+                }
+        );
+        verticalSeekBar.setOnPressListener(
+                new Function1<Integer, Unit>() {
+                    @Override
+                    public Unit invoke(Integer progressValue) {
+                        if (isSwipe == false) {
+                            updateViewPager(progressValue);
+                        }
+                        isSwipe = false;
+                        return null;
+                    }
+                }
+        );
+        verticalSeekBar.setOnReleaseListener(
+                new Function1<Integer, Unit>() {
+                    @Override
+                    public Unit invoke(Integer progressValue) {
+                        updateViewPager(progressValue);
+                        return null;
+                    }
+                }
+        );
+
+    }
+
+    private void initSharedPrefs() {
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        editor = sharedPreferences.edit();
+    }
+
+    private boolean getThemeNightMode() {
+        return sharedPreferences.getBoolean(Constant.KEY_PREFS_THEME_MODE, false);
+    }
+
+    private void saveThemeNightMode(boolean nightMode) {
+        editor.putBoolean(Constant.KEY_PREFS_THEME_MODE, nightMode);
+        editor.commit();
+        editor.apply();
+    }
+    private void setThemeMode(boolean isNightMode){
+        if (isNightMode) {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+
+        } else {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+        }
+    }
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_activity_pdfview, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+
+
+        MenuItem menuIsNightMode = menu.findItem(R.id.menu_pdfView_item_Theme);
+        if (getThemeNightMode()) {
+            menuIsNightMode.setChecked(true);
+            setThemeMode(true);
+        } else {
+            menuIsNightMode.setChecked(false);
+            setThemeMode(false);
+        }
+        return super.onPrepareOptionsMenu(menu);
+
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.menu_pdfView_item_Theme: {
+                if (item.isChecked()) {
+                    item.setChecked(false);
+                    saveThemeNightMode(false);
+                    setThemeMode(false);
+                } else {
+                    item.setChecked(true);
+                    saveThemeNightMode(true);
+                    setThemeMode(true);
+                }
+            }
+            break;
+            case R.id.menu_pdfView_item_Vertical: {
+                setViewPagerOrientation(ViewPager2.ORIENTATION_VERTICAL);
+                if (rootViewChangeButton.getVisibility() == View.VISIBLE)
+                    rootViewChangeButton.setVisibility(View.INVISIBLE);
+                verticalSeekBar.setVisibility(View.VISIBLE);
+            }
+            break;
+            case R.id.menu_pdfView_item_Horizontal: {
+                setViewPagerOrientation(ViewPager2.ORIENTATION_HORIZONTAL);
+                if (verticalSeekBar.getVisibility() == View.VISIBLE) {
+                    rootViewChangeButton.setVisibility(View.VISIBLE);
+                    verticalSeekBar.setVisibility(View.INVISIBLE);
+
+                }
+            }
+            break;
+            default: {
+                super.onOptionsItemSelected(item);
+            }
+        }
+        return true;
+    }
+
+    private void setViewPagerOrientation(int orientation) {
+        viewPager.setOrientation(orientation);
+    }
+
     private void updateViewPager(int currentPageIndex) {
         viewPager.setCurrentItem(currentPageIndex);
         prevBtn.setEnabled(currentPageIndex > 0);
         nextBtn.setEnabled(currentPageIndex + 1 < totalPages);
         updatePageCountTV(currentPageIndex);
-
     }
 
     private void updatePageCountTV(int currentPageIndex) {
         tv_pageCount.setText(currentPageIndex + "/" + totalPages);
+    }
+
+    private void updateScrollerValue(int progress) {
+        if (isSwipe == true) {
+            verticalSeekBar.setProgress(progress);
+        }
     }
 
     public void showNumberPicker() {
@@ -301,6 +377,7 @@ public class PdfViewActivity extends AppCompatActivity implements NumberPicker.O
             getBitmapsFromRenderer();
             loadingBar.setVisibility(View.INVISIBLE);
             if (pdfImagesList != null) {
+                tv_pageCount.setVisibility(View.VISIBLE);
                 initViewPager();
                 updatePageCountTV(0);
                 setUpVerticalSeekBar(totalPages);

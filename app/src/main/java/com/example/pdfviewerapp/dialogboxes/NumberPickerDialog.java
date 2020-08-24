@@ -8,6 +8,8 @@ import android.widget.NumberPicker;
 
 import androidx.fragment.app.DialogFragment;
 
+import com.example.pdfviewerapp.R;
+
 public class NumberPickerDialog extends DialogFragment {
     private NumberPicker.OnValueChangeListener valueChangeListener;
 

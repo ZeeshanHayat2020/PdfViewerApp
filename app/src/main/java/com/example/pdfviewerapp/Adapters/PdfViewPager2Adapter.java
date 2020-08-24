@@ -2,18 +2,24 @@ package com.example.pdfviewerapp.Adapters;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.pdfviewerapp.R;
+import com.example.pdfviewerapp.customviews.TouchImageView;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static androidx.constraintlayout.widget.Constraints.TAG;
 
 public class PdfViewPager2Adapter extends RecyclerView.Adapter<PdfViewPager2Adapter.ViewHolder> {
 
@@ -34,9 +40,33 @@ public class PdfViewPager2Adapter extends RecyclerView.Adapter<PdfViewPager2Adap
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
-
+    public void onBindViewHolder(final ViewHolder holder, int position) {
         holder.imageView.setImageBitmap(bitmapsList.get(position));
+        holder.imageView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                if (holder.imageView.isZoomed()){
+                    holder.itemView.getParent().requestDisallowInterceptTouchEvent(true);
+                    Log.d(TAG, "onTouch: parent should be disable");
+                }else {
+                    holder.itemView.getParent().requestDisallowInterceptTouchEvent(false);
+                    Log.d(TAG, "onTouch: parent should be enable");
+                }
+                return false;
+            }
+        });
+       /* holder.imageView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                switch (motionEvent.getAction()){
+                    case MotionEvent.ACTION_DOWN:{
+                        Toast.makeText(view.getContext(), "Touched", Toast.LENGTH_SHORT).show();
+
+                    }break;
+                }
+                return false;
+            }
+        });*/
     }
 
     @Override
@@ -47,12 +77,11 @@ public class PdfViewPager2Adapter extends RecyclerView.Adapter<PdfViewPager2Adap
 
     public class ViewHolder extends RecyclerView.ViewHolder {
 
-        ImageView imageView;
+        TouchImageView imageView;
 
         ViewHolder(View itemView) {
             super(itemView);
             imageView = itemView.findViewById(R.id.item_view_viewpager_iv);
-            itemView.setScrollbarFadingEnabled(true);
 
         }
 

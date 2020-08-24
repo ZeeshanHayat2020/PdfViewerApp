@@ -3,12 +3,21 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_margin="@dimen/_40sdp"
+    android:background="@android:color/darker_gray"
+    android:paddingBottom="@dimen/_3sdp"
+    android:paddingTop="@dimen/_3sdp"
+    android:paddingLeft="@dimen/_2sdp"
+    android:paddingRight="@dimen/_2sdp"
     >
-    <ImageView
+
+    <com.example.pdfviewerapp.customviews.TouchImageView
         android:id="@+id/item_view_viewpager_iv"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:clickable="true"
+        android:focusable="true"
+        android:src="@drawable/ic_launcher_background"
+        android:background="@android:color/white"
         />
 
 </RelativeLayout>
