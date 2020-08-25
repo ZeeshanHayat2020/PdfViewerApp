@@ -88,6 +88,7 @@ public class PdfViewActivity extends AppCompatActivity implements NumberPicker.O
         btnFindPage.setOnClickListener(onClickListener);
         nextBtn.setOnClickListener(onClickListener);
         prevBtn.setOnClickListener(onClickListener);
+        tv_pageCount.setOnClickListener(onClickListener);
 
         new LoadFiles().execute();
     }
@@ -164,6 +165,8 @@ public class PdfViewActivity extends AppCompatActivity implements NumberPicker.O
         });
 
     }
+
+
 
     private void getBitmapsFromRenderer() {
         pdfImagesList = new ArrayList<>();
@@ -347,6 +350,10 @@ public class PdfViewActivity extends AppCompatActivity implements NumberPicker.O
                     }
                     break;
                     case R.id.btn_findPage: {
+                        showNumberPicker();
+                    }
+                    break;
+                    case R.id.pdfView_ac_pageCount_Tv: {
                         showNumberPicker();
                     }
                     break;
